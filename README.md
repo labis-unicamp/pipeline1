@@ -99,11 +99,11 @@ Refer to the available code at: /github_pipeline1/pipeline1/sorted_bai_bam_files
 ```
 bowtie2 -x /Homo_sapiens/UCSC/hg38/Sequence/Bowtie2Index/genome.fa -1 your_file_read_1.fastq.gz -2 your_file_read__2.fastq.gz | samtools view -b -o output_bowtie.bam
 ```
-### BWA-MEM index
+### BWA-MEM alignment
 ```
 bwa mem /Homo_sapiens/UCSC/hg38/Sequence/BWAIndex/genome.fa your_file_read_1.fastq.gz your_file_read_2.fastq.gz | samtools view -bS -1 - > output_bwamem.bam
 ```
-### BWA_MEM2 index
+### BWA_MEM2 alignment
 ```
 bwa-mem2 mem /Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa your_file_read_1.fastq.gz your_file_read_2.fastq.gz  | samtools view -b -o output_bwamem2.bam
 ```
