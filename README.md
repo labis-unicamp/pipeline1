@@ -85,7 +85,7 @@ bwa index /Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
 ```
 ### BWA_MEM2 index
 ```
-bwa-mem2 /Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
+bwa-mem2 index /Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
 ```
 
 ## Generating the BAI index file:
