@@ -207,6 +207,10 @@ bcftools view -i 'QUAL>=30' var_bcftools.vcf.gz | bcftools query -f '%CHROM:%POS
 <img src="https://github.com/user-attachments/assets/c297b94a-5db7-4a16-a054-c588b31c21c3" width="300px" />
 </div> 
 
+### **Conclusion:** GATK identifies 7.9% more variants with quality Q30 or higher than Freebayes and Freebayes is approximately 48.07% faster than GATK
+
+
+
 ## **Additional option:** Optimized pipeline for cluster environments that processes downloaded SRA files into VCFs using BWA-MEM2 and FreeBayes as core tools:
 Refer to the available code at: /github_pipeline1/pipeline1/pipeline_hyperopt_otimizado.sh
 ```
