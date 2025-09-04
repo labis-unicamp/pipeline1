@@ -200,7 +200,7 @@ bcftools view -i 'QUAL>=30' var_bcftools.vcf.gz | bcftools query -f '%CHROM:%POS
 ## After the Q30 quality filter, here is the upsetplot and Venn diagram of the quality variants identified by the four different software programs:
 
 <div align="center">
-<img src="https://github.com/user-attachments/assets/a5411cd4-0652-4cd2-8e07-66cca43a32b1" width="300px" />
+<img src="https://github.com/user-attachments/assets/d74d37f1-5b27-4897-90c1-8a99ba429183" width="300px" />
 </div> 
 
 <div align="center">
