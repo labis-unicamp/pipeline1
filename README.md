@@ -289,6 +289,14 @@ dev.off()
 
 print("Plots generated successfully! Check: manhattan_final.png and qq_final.png")
 ```
+## Manhattan plot combine:
+Refer to the available code at: /github_pipeline1/pipeline1/Manhattan-plot-combine.R
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/3ada9047-aa21-4018-b47a-213419be71e0" width="300px" />
+</div> 
+
+
 ## Pleiotropy analysis:
 ### Run the GWAS for the two target diseases and then conduct the analyses using the results obtained:
 ```
@@ -334,13 +342,6 @@ Rscript -e '
   cor_test <- cor.test(data$OR1, data$OR2, method="spearman")
   print(paste("Effect correlation (rho):", cor_test$estimate))'
 ```
-
-## Manhattan plot combine:
-Refer to the available code at: /github_pipeline1/pipeline1/Manhattan-plot-combine.R
-
-<div align="center">
-<img src="https://github.com/user-attachments/assets/3ada9047-aa21-4018-b47a-213419be71e0" width="300px" />
-</div> 
 
 ## Scatter plot of p-values:
 Refer to the available code at: /github_pipeline1/pipeline1/Scatter-plot.R
