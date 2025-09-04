@@ -193,6 +193,9 @@ See implementation at: /github_pipeline1/pipeline1/venn-diagram-script.R
 ### Code to filter variants with quality equal or above 30:
 ```
 bcftools view -i 'QUAL>=30' var_deepvariants.vcf.gz | bcftools query -f '%CHROM:%POS:%REF>%ALT\n' > var_deepvariants_PASS30.txt
+bcftools view -i 'QUAL>=30' var_gatk.vcf.gz | bcftools query -f '%CHROM:%POS:%REF>%ALT\n' > var_gatk_PASS30.txt
+bcftools view -i 'QUAL>=30' var_freebayes.vcf.gz | bcftools query -f '%CHROM:%POS:%REF>%ALT\n' > var_freebayes_PASS30.txt
+bcftools view -i 'QUAL>=30' var_bcftools.vcf.gz | bcftools query -f '%CHROM:%POS:%REF>%ALT\n' > var_bcftools_PASS30.txt
 ```
 
 ## **Additional option:** Optimized pipeline for cluster environments that processes downloaded SRA files into VCFs using BWA-MEM2 and FreeBayes as core tools:
