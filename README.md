@@ -197,6 +197,15 @@ bcftools view -i 'QUAL>=30' var_gatk.vcf.gz | bcftools query -f '%CHROM:%POS:%RE
 bcftools view -i 'QUAL>=30' var_freebayes.vcf.gz | bcftools query -f '%CHROM:%POS:%REF>%ALT\n' > var_freebayes_PASS30.txt
 bcftools view -i 'QUAL>=30' var_bcftools.vcf.gz | bcftools query -f '%CHROM:%POS:%REF>%ALT\n' > var_bcftools_PASS30.txt
 ```
+## After the Q30 quality filter, here is the upsetplot and Venn diagram of the quality variants identified by the four different software programs:
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/a5411cd4-0652-4cd2-8e07-66cca43a32b1" width="300px" />
+</div> 
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/a5411cd4-0652-4cd2-8e07-66cca43a32b1" width="300px" />
+</div> 
 
 ## **Additional option:** Optimized pipeline for cluster environments that processes downloaded SRA files into VCFs using BWA-MEM2 and FreeBayes as core tools:
 Refer to the available code at: /github_pipeline1/pipeline1/pipeline_hyperopt_otimizado.sh
