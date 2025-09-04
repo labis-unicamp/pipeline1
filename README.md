@@ -204,7 +204,7 @@ bcftools view -i 'QUAL>=30' var_bcftools.vcf.gz | bcftools query -f '%CHROM:%POS
 </div> 
 
 <div align="center">
-<img src="https://github.com/user-attachments/assets/a5411cd4-0652-4cd2-8e07-66cca43a32b1" width="300px" />
+<img src="https://github.com/user-attachments/assets/c297b94a-5db7-4a16-a054-c588b31c21c3" width="300px" />
 </div> 
 
 ## **Additional option:** Optimized pipeline for cluster environments that processes downloaded SRA files into VCFs using BWA-MEM2 and FreeBayes as core tools:
