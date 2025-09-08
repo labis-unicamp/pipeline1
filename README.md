@@ -429,15 +429,26 @@ echo -e "\nNúmero total de variantes sobrepostas: $(($(wc -l < snps_pleiotropic
 # Scatter-plot-detalhado.R
 data <- read.table("snps_pleiotropicos_ordenados.txt", header=TRUE)
 png("pvalue_scatter.png", width=800, height=800, res=100)
+
+# Código CORRIGIDO com cores mais informativas
 plot(-log10(data$P_disease_1), -log10(data$P_disease_2),
      xlab="-log10(P-valor Alzheimer)", 
      ylab="-log10(P-valor Diabetes)",
      main="Comparação de Significância entre Fenótipos",
-     pch=19, col=ifelse(data$Fisher_P < 0.05, "red", "black"))
-abline(h=-log10(0.05), v=-log10(0.05), lty=2, col="blue")
-legend("topright", legend=c("Pleiotropia (p<0.05)", "Não significativo"),
-       col=c("red", "black"), pch=19)
+     pch=19, 
+     col=ifelse(data$Fisher_P < 0.05, "blue", 
+               ifelse(data$P_disease_1 < 0.05 | data$P_disease_2 < 0.05, "red", "black")))
+
+abline(h=-log10(0.05), v=-log10(0.05), lty=2, col="gray")
+legend("topright", 
+       legend=c("Pleiotrópica (Fisher p<0.05)", 
+                "Significativa em uma doença (p<0.05)", 
+                "Não significativa"),
+       col=c("blue", "red", "black"), 
+       pch=19)
+
 dev.off()
+
 
 # Identificar variantes pleiotrópicas significativas
 pleiotropicas <- data[data$Fisher_P < 0.05, ]
@@ -493,7 +504,7 @@ cat("• r =", round(cor(-log10(data$P_disease_1), -log10(data$P_disease_2)), 3)
 Refer to the available code at: /github_pipeline1/pipeline1/Scatter-plot.R
 
 <div align="center">
-<img src="https://github.com/user-attachments/assets/3dd94c5a-8e8c-4e76-9331-b8bcaefa8d22" width="300px" />
+<img src="https://github.com/user-attachments/assets/4df52e66-2056-4e96-a09b-9675e330ef03" width="300px" />
 </div> 
 
 ## The variants were annotated in the VEP via a graphical interface on the website: 
