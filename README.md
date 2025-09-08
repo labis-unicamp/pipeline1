@@ -493,7 +493,7 @@ cat("• r =", round(cor(-log10(data$P_disease_1), -log10(data$P_disease_2)), 3)
 Refer to the available code at: /github_pipeline1/pipeline1/Scatter-plot.R
 
 <div align="center">
-<img src="https://github.com/user-attachments/assets/3cf3a956-cd8e-41c8-8c61-eddf4eee5f29" width="300px" />
+<img src="https://github.com/user-attachments/assets/3dd94c5a-8e8c-4e76-9331-b8bcaefa8d22" width="300px" />
 </div> 
 
 ## The variants were annotated in the VEP via a graphical interface on the website: 
