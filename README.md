@@ -513,9 +513,15 @@ https://www.ensembl.org/Homo_sapiens/Tools/VEP?tl=k2dBMwVpFcRHNgnD-10806356
 ### the variants were filtered using the python script available at: 
 github_pipeline1/pipeline1/find_biomarkers.ipynb
 
+## Enrichment analysis:
+The enrichment analysis was done through the python script:
+<div align="center">
+<img src="https://github.com/user-attachments/assets/9496d4a6-2684-4e67-b3b5-9baf05a0f5f6" width="300px" />
+</div> 
+
 ## REVIGO analysis:
-The onthology gene codes of each variant were collected in the previous script and the analysis in the code was processed via the graphical interface. To generate the main image contained in the article, the R script was extracted from the journal and processed.
-Refer to the available code at: /github_pipeline1/pipeline1/scriptREVIGO_treemapBP.R
+The ontology gene codes of each variant were collected in the previous script and the analysis in the code was processed via the graphical interface. To generate the main image contained in the article, the R script was extracted from the journal and processed.
+Please take a look at the available code at: /github_pipeline1/pipeline1/scriptREVIGO_treemapBP.R
 
 <div align="center">
 <img src="https://github.com/user-attachments/assets/9496d4a6-2684-4e67-b3b5-9baf05a0f5f6" width="300px" />
