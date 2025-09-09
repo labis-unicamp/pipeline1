@@ -520,11 +520,11 @@ The enrichment analysis was done through the Python script: /github_pipeline1/pi
 </div> 
 
 ## REVIGO analysis:
-The ontology gene codes of each variant were collected in the previous script, and the analysis in the code was processed via the graphical interface. To generate the main image contained in the article, the R script was extracted from the journal and processed.
+The information about the ontology genetics of 3 variants that show 'HIGH' in the 'IMPACT' column was collected from the 'GO' column in the previous script, and the analysis was done with the REVIGO code to generate a Biological Process graphical interface. 
 Please review the available code at: /github_pipeline1/pipeline1/scriptREVIGO_treemapBP.R
 
 <div align="center">
-<img src="https://github.com/user-attachments/assets/9496d4a6-2684-4e67-b3b5-9baf05a0f5f6" width="300px" />
+<img src="https://github.com/user-attachments/assets/e6cbdc36-ddf1-4876-8585-5cd5812454b5" width="300px" />
 </div> 
 
 
