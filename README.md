@@ -516,7 +516,7 @@ github_pipeline1/pipeline1/find_biomarkers.ipynb
 ## Enrichment analysis:
 The enrichment analysis was done through the Python script: /github_pipeline1/pipeline1/enriquecimento_completo.py
 <div align="center">
-<img src="https://github.com/user-attachments/assets/5eb54c66-d54b-4fe1-9dc3-4dabba876bcd" width="300px" />
+<img src="https://github.com/user-attachments/assets/fa6871a4-e47c-45f0-ae51-3f70874098cf" width="300px" />
 </div> 
 
 ## REVIGO analysis:
