@@ -85,6 +85,13 @@ LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:36
 
 
 ```
+# Fazer a trimagem com o fastp
+```
+fastp -i SRR1004264_1.fastq.gz -I SRR1004264_2.fastq.gz -o SRR1004264_1.trimmed.fastq.gz -O SRR1004264_2.trimmed.fastq.gz --detect_adapter_for_pe --thread 8 -j SRR1004264.fastp.json -h SRR1004264.fastp.html
+fastp -i SRR1005457_1.fastq.gz -I SRR1005457_2.fastq.gz -o SRR1005457_1.trimmed.fastq.gz -O SRR1005457_2.trimmed.fastq.gz --detect_adapter_for_pe --thread 8 -j SRR1005457.fastp.json -h SRR1005457.fastp.html
+fastp -i SRR1006267_1.fastq.gz -I SRR1006267_2.fastq.gz -o SRR1006267_1.trimmed.fastq.gz -O SRR1006267_2.trimmed.fastq.gz --detect_adapter_for_pe --thread 8 -j SRR1006267.fastp.json -h SRR1006267.fastp.html
+```
+
 
 ## Downloading the human reference genome (GRCh38/hg38) from official sources (https://support.illumina.com/sequencing/sequencing_software/igenome.html)
 ``` 
