@@ -65,7 +65,16 @@ multiqc fastqc_results/ -o multiqc_report --filename multiqc_report.html
 ## If the read quality of the samples falls below the required threshold, quality trimming and adapter removal can be performed using Trimmomatic:
 ```
 trimmomatic PE -threads 4 input_R1.fastq.gz input_R2.fastq.gz output_R1_paired.fq.gz output_R1_unpaired.fq.gz output_R2_paired.fq.gz output_R2_unpaired.fq.gz ILLUMINACLIP:adapters/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
-``` 
+```
+```
+trimmomatic PE -threads 4 -phred33 \
+input_R1.fastq.gz input_R2.fastq.gz \
+output_R1_paired.fq.gz output_R1_unpaired.fq.gz \
+output_R2_paired.fq.gz output_R2_unpaired.fq.gz \
+ILLUMINACLIP:adapters/TruSeq3-PE-2.fa:2:30:10 \
+LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:36
+
+```
 
 ## Downloading the human reference genome (GRCh38/hg38) from official sources (https://support.illumina.com/sequencing/sequencing_software/igenome.html)
 ``` 
