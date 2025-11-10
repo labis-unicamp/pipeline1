@@ -68,12 +68,12 @@ trimmomatic PE -threads 4 input_R1.fastq.gz input_R2.fastq.gz output_R1_paired.f
 ```
 # Download the file for trimming:
 ```
-```
 # Create a folder to organize the adapters:
 mkdir -p trimmomatic_adapters
-
 # Download the specific file for paired-end TruSeq3 libraries:
 wget -O trimmomatic_adapters/TruSeq3-PE.fa https://raw.githubusercontent.com/timflutre/trimmomatic/master/adapters/TruSeq3-PE.fa
+```
+
 
 ```
 trimmomatic PE -threads 4 -phred33 \
