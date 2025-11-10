@@ -91,6 +91,14 @@ fastp -i SRR1004264_1.fastq.gz -I SRR1004264_2.fastq.gz -o SRR1004264_1.trimmed.
 fastp -i SRR1005457_1.fastq.gz -I SRR1005457_2.fastq.gz -o SRR1005457_1.trimmed.fastq.gz -O SRR1005457_2.trimmed.fastq.gz --detect_adapter_for_pe --thread 8 -j SRR1005457.fastp.json -h SRR1005457.fastp.html
 fastp -i SRR1006267_1.fastq.gz -I SRR1006267_2.fastq.gz -o SRR1006267_1.trimmed.fastq.gz -O SRR1006267_2.trimmed.fastq.gz --detect_adapter_for_pe --thread 8 -j SRR1006267.fastp.json -h SRR1006267.fastp.html
 ```
+```
+for r1 in *_1.fastq.gz; do
+    r2=${r1/_1.fastq.gz/_2.fastq.gz}
+    sample=${r1%_1.fastq.gz}
+    fastp -i "$r1" -I "$r2" -o "${sample}_1.trimmed.fastq.gz" -O "${sample}_2.trimmed.fastq.gz" --detect_adapter_for_pe --thread 8 -j "${sample}.fastp.json" -h "${sample}.fastp.html"
+done
+
+```
 
 
 ## Downloading the human reference genome (GRCh38/hg38) from official sources (https://support.illumina.com/sequencing/sequencing_software/igenome.html)
