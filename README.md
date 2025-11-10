@@ -66,13 +66,13 @@ multiqc fastqc_results/ -o multiqc_report --filename multiqc_report.html
 ```
 trimmomatic PE -threads 4 input_R1.fastq.gz input_R2.fastq.gz output_R1_paired.fq.gz output_R1_unpaired.fq.gz output_R2_paired.fq.gz output_R2_unpaired.fq.gz ILLUMINACLIP:adapters/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
 ```
-# baixar o arquivo para trimagem
+# Download the file for trimming:
 ```
 ```
-# Cria uma pasta para organizar os adaptadores
+# Create a folder to organize the adapters:
 mkdir -p trimmomatic_adapters
 
-# Baixa o arquivo específico para bibliotecas paired-end TruSeq3
+# Download the specific file for paired-end TruSeq3 libraries:
 wget -O trimmomatic_adapters/TruSeq3-PE.fa https://raw.githubusercontent.com/timflutre/trimmomatic/master/adapters/TruSeq3-PE.fa
 
 ```
@@ -85,7 +85,7 @@ LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:36
 
 
 ```
-# Fazer a trimagem com o fastp
+# Perform the trimming with fastp
 ```
 fastp -i SRR1004264_1.fastq.gz -I SRR1004264_2.fastq.gz -o SRR1004264_1.trimmed.fastq.gz -O SRR1004264_2.trimmed.fastq.gz --detect_adapter_for_pe --thread 8 -j SRR1004264.fastp.json -h SRR1004264.fastp.html
 fastp -i SRR1005457_1.fastq.gz -I SRR1005457_2.fastq.gz -o SRR1005457_1.trimmed.fastq.gz -O SRR1005457_2.trimmed.fastq.gz --detect_adapter_for_pe --thread 8 -j SRR1005457.fastp.json -h SRR1005457.fastp.html
