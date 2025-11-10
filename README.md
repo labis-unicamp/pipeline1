@@ -77,11 +77,12 @@ wget -O trimmomatic_adapters/TruSeq3-PE.fa https://raw.githubusercontent.com/tim
 
 ```
 trimmomatic PE -threads 4 -phred33 \
-SRR1004264_1.fastq.gz SRR1004264_2.fastq.gz \
-SRR1004264_R1_paired.fq.gz SRR1004264_R1_unpaired.fq.gz \
-SRR1004264_R2_paired.fq.gz SRR1004264_R2_unpaired.fq.gz \
+SRR1005457_1.fastq.gz SRR1005457_2.fastq.gz \
+SRR1005457_R1_paired.fq.gz SRR1005457_R1_unpaired.fq.gz \
+SRR1005457_R2_paired.fq.gz SRR1005457_R2_unpaired.fq.gz \
 ILLUMINACLIP:trimmomatic_adapters/TruSeq3-PE.fa:2:30:10 \
 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:36
+
 
 ```
 
