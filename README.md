@@ -66,12 +66,21 @@ multiqc fastqc_results/ -o multiqc_report --filename multiqc_report.html
 ```
 trimmomatic PE -threads 4 input_R1.fastq.gz input_R2.fastq.gz output_R1_paired.fq.gz output_R1_unpaired.fq.gz output_R2_paired.fq.gz output_R2_unpaired.fq.gz ILLUMINACLIP:adapters/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
 ```
+# baixar o arquivo para trimagem
+```
+```
+# Cria uma pasta para organizar os adaptadores
+mkdir -p trimmomatic_adapters
+
+# Baixa o arquivo específico para bibliotecas paired-end TruSeq3
+wget -O trimmomatic_adapters/TruSeq3-PE.fa https://raw.githubusercontent.com/timflutre/trimmomatic/master/adapters/TruSeq3-PE.fa
+
 ```
 trimmomatic PE -threads 4 -phred33 \
-input_R1.fastq.gz input_R2.fastq.gz \
-output_R1_paired.fq.gz output_R1_unpaired.fq.gz \
-output_R2_paired.fq.gz output_R2_unpaired.fq.gz \
-ILLUMINACLIP:adapters/TruSeq3-PE-2.fa:2:30:10 \
+SRR1004264_1.fastq.gz SRR1004264_2.fastq.gz \
+SRR1004264_R1_paired.fq.gz SRR1004264_R1_unpaired.fq.gz \
+SRR1004264_R2_paired.fq.gz SRR1004264_R2_unpaired.fq.gz \
+ILLUMINACLIP:trimmomatic_adapters/TruSeq3-PE.fa:2:30:10 \
 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:36
 
 ```
