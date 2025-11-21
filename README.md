@@ -111,15 +111,15 @@ tar -xf Homo_sapiens_UCSC_hg38.tar.gz
 
 ### Bowtie index
 ```
-bowtie2-build /Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
+bowtie2-build Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
 ```
 ### BWA-MEM index
 ```
-bwa index /Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
+bwa index Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
 ```
 ### BWA_MEM2 index
 ```
-bwa-mem2 index /Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
+bwa-mem2 index Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
 ```
 
 ## Generating the BAI index file:
