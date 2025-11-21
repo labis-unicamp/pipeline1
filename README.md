@@ -122,10 +122,6 @@ bwa index Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
 bwa-mem2 index Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
 ```
 
-## Generating the BAI index file:
-Refer to the available code at: /github_pipeline1/pipeline1/sorted_bai_bam_files.sh
-
-
 ## Performing sequence alignment against the reference genome:
 **Note:** Theses codes automatically converts SAM files to compressed BAM format during alignment.
 
@@ -141,6 +137,9 @@ bwa mem /Homo_sapiens/UCSC/hg38/Sequence/BWAIndex/genome.fa your_file_read_1.fas
 ```
 bwa-mem2 mem /Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa your_file_read_1.fastq.gz your_file_read_2.fastq.gz  | samtools view -b -o output_bwamem2.bam
 ```
+## Generating the BAI index file:
+Refer to the available code at: /github_pipeline1/pipeline1/sorted_bai_bam_files.sh
+
 ## Generating quality metrics for BAM files:
 Refer to the available code at: /github_pipeline1/pipeline1/genareted_bam_metrics.sh
 
