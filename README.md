@@ -97,6 +97,13 @@ for r1 in *_1.fastq.gz; do
     sample=${r1%_1.fastq.gz}
     fastp -i "$r1" -I "$r2" -o "${sample}_1.trimmed.fastq.gz" -O "${sample}_2.trimmed.fastq.gz" --detect_adapter_for_pe --thread 8 -j "${sample}.fastp.json" -h "${sample}.fastp.html"
 done
+# OR
+for r1 in *_1.fastq.gz; do
+    r2=${r1/_1.fastq.gz/_2.fastq.gz}
+    sample=${r1%_1.fastq.gz}
+    fastp -i "$r1" -I "$r2" -o "${sample}_1.trimmed.fastq.gz" -O "${sample}_2.trimmed.fastq.gz" --detect_adapter_for_pe --thread 8 -j "${sample}.fastp.json" -h "${sample}.fastp.html" -f 15 -t 2
+done
+
 
 ```
 
