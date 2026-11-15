@@ -1,0 +1,595 @@
+# Benchmarking a FASTQ-to-GWAS Pipeline with Functional Pleiotropy: An Open-Source Workflow for Alzheimer's Disease and Type 2 Diabetes
+Open-source code for a bioinformatics pipeline analyzing genomic interactions between two polygenic diseases.
+
+This repository contains all the code required to process raw data (such as FASTQ files), align it to the human reference genome using three different aligners, and generate variant files using four distinct variant callers. A description of this work is available on the [LABIS website](https://labis.cbmeg.unicamp.br/labis/publicacoes/131-the-open-science-revolution-in-complex-disease-genetics-an-integrated-pipeline-from-fastq-to-gwas-and-functional-pleiotropy), critically analyzing each software’s performance and highlighting differences in their results. It also provides a step-by-step guide for conducting a GWAS (Genome-Wide Association Study) and a pleiotropy analysis, focusing on two diseases: Type 2 diabetes and Alzheimer’s disease.
+
+The code snippets explicitly shown in this file are written in Bash. The remaining scripts are implemented in:
+        
+* R (files with .R extension)
+
+* Python (.py or .ipynb files)
+
+* Bash (.sh files)
+
+## Download the bioinfo2_env.yml file to your local machine and create and activate the Conda environment using the following commands:
+```
+conda env create -f bioinfo2_env.yml
+```
+
+## Downloading SRA files using prefetch and converting them to FASTQ format:
+**Note:** For complete instructions on downloading dbGaP files, please refer to: [https://www.ncbi.nlm.nih.gov/sra/docs/sra-dbgap-download/]. Depending on the file type (whether they require an access key or not), they should be downloaded using one of the following methods:
+``` 
+#!/bin/bash
+
+# Input file containing the list of SRA IDs
+input_file="file_containing_the_sra_file_ids.txt"
+
+# Directory where the SRA files will be downloaded
+sra_dir="/path_to_the_destination_folder_of_the_generated_files"
+
+# Directory where the FASTQ files will be generated
+fastq_dir="/path_to_the_destination_folder_of_the_generated_files"
+
+# NGC file for the prefetch command
+ngc_file="/the_directory_path_where_your_access_key_is_stored_and_the_filename_of_your_access_key/prj_xxxxx.ngc"
+
+# Loop through the input file
+while read sra_id; do
+    echo "Processing SRA ID: $sra_id"
+
+    # Download the SRA file (raising the size limit to 100 GB)
+    prefetch --ngc "$ngc_file" --max-size 100G "$sra_id"
+
+    # Convert the SRA file to FASTQ
+    fastq-dump --gzip --split-files -O "$fastq_dir" "$sra_dir/$sra_id/$sra_id.sra"
+    
+    # Delete the SRA file
+    if [ -f "$sra_dir/$sra_id/$sra_id.sra" ]; then
+        rm -r "$sra_dir/$sra_id"
+    fi
+
+    echo "Processing complete for SRA ID: $sra_id"
+done < "$input_file"
+``` 
+ 
+## Quality check:
+This code performs quality control analysis on each FASTQ file in the directory, generating individual quality reports for every sample. It then consolidates all individual reports into a single comprehensive quality report in the output directory.
+
+```
+fastqc *.fastq *.fastq.gz --outdir=./fastqc_results
+# inside the fastqc_results directory, the following commands were executed:
+cd ./fastqc_results
+multiqc fastqc_results/ -o multiqc_report --filename multiqc_report.html
+```
+
+## If the read quality of the samples falls below the required threshold, quality trimming and adapter removal can be performed using Trimmomatic:
+```
+trimmomatic PE -threads 4 input_R1.fastq.gz input_R2.fastq.gz output_R1_paired.fq.gz output_R1_unpaired.fq.gz output_R2_paired.fq.gz output_R2_unpaired.fq.gz ILLUMINACLIP:adapters/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+```
+# Download the file for trimming:
+```
+# Create a folder to organize the adapters:
+mkdir -p trimmomatic_adapters
+# Download the specific file for paired-end TruSeq3 libraries:
+wget -O trimmomatic_adapters/TruSeq3-PE.fa https://raw.githubusercontent.com/timflutre/trimmomatic/master/adapters/TruSeq3-PE.fa
+```
+
+
+```
+trimmomatic PE -threads 4 -phred33 \
+SAMPLE5_1.fastq.gz SAMPLE5_2.fastq.gz \
+SAMPLE5_R1_paired.fq.gz SAMPLE5_R1_unpaired.fq.gz \
+SAMPLE5_R2_paired.fq.gz SAMPLE5_R2_unpaired.fq.gz \
+ILLUMINACLIP:trimmomatic_adapters/TruSeq3-PE.fa:2:30:10 \
+LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:36
+
+
+```
+# Perform the trimming with fastp
+```
+fastp -i SAMPLE6_1.fastq.gz -I SAMPLE6_2.fastq.gz -o SAMPLE6_1.trimmed.fastq.gz -O SAMPLE6_2.trimmed.fastq.gz --detect_adapter_for_pe --thread 8 -j SAMPLE6.fastp.json -h SAMPLE6.fastp.html
+fastp -i SAMPLE5_1.fastq.gz -I SAMPLE5_2.fastq.gz -o SAMPLE5_1.trimmed.fastq.gz -O SAMPLE5_2.trimmed.fastq.gz --detect_adapter_for_pe --thread 8 -j SAMPLE5.fastp.json -h SAMPLE5.fastp.html
+fastp -i SAMPLE7_1.fastq.gz -I SAMPLE7_2.fastq.gz -o SAMPLE7_1.trimmed.fastq.gz -O SAMPLE7_2.trimmed.fastq.gz --detect_adapter_for_pe --thread 8 -j SAMPLE7.fastp.json -h SAMPLE7.fastp.html
+```
+```
+for r1 in *_1.fastq.gz; do
+    r2=${r1/_1.fastq.gz/_2.fastq.gz}
+    sample=${r1%_1.fastq.gz}
+    fastp -i "$r1" -I "$r2" -o "${sample}_1.trimmed.fastq.gz" -O "${sample}_2.trimmed.fastq.gz" --detect_adapter_for_pe --thread 8 -j "${sample}.fastp.json" -h "${sample}.fastp.html"
+done
+# OR
+for r1 in *_1.fastq.gz; do
+    r2=${r1/_1.fastq.gz/_2.fastq.gz}
+    sample=${r1%_1.fastq.gz}
+    fastp -i "$r1" -I "$r2" -o "${sample}_1.trimmed.fastq.gz" -O "${sample}_2.trimmed.fastq.gz" --detect_adapter_for_pe --thread 8 -j "${sample}.fastp.json" -h "${sample}.fastp.html" -f 15 -t 2
+done
+
+
+```
+
+
+## Downloading the human reference genome (GRCh38/hg38) from official sources (https://support.illumina.com/sequencing/sequencing_software/igenome.html)
+``` 
+wget http://igenomes.illumina.com.s3-website-us-east-1.amazonaws.com/Homo_sapiens/UCSC/hg38/Homo_sapiens_UCSC_hg38.tar.gz
+tar -xf Homo_sapiens_UCSC_hg38.tar.gz
+``` 
+## Generating index files for each alignment tool using the GRCh38/hg38 reference genome:
+**Note:** Select an alignment tool and run the corresponding command for your chosen aligner.
+
+### Bowtie index
+```
+bowtie2-build Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa Homo_sapiens/UCSC/hg38/Sequence/Bowtie2Index/genome
+```
+### BWA-MEM index
+```
+bwa index Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
+```
+### BWA_MEM2 index
+```
+bwa-mem2 index Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
+```
+
+## Performing sequence alignment against the reference genome:
+**Note:** These commands automatically convert SAM files to compressed BAM format during alignment.
+
+### Bowtie alignment
+```
+bowtie2 -x Homo_sapiens/UCSC/hg38/Sequence/Bowtie2Index/genome -1 your_file_read_1.fastq.gz -2 your_file_read_2.fastq.gz | samtools view -b -o output_bowtie.bam
+```
+### BWA-MEM alignment
+```
+bwa mem /Homo_sapiens/UCSC/hg38/Sequence/BWAIndex/genome.fa your_file_read_1.fastq.gz your_file_read_2.fastq.gz | samtools view -bS -1 - > output_bwamem.bam
+```
+### BWA_MEM2 alignment
+```
+bwa-mem2 mem /Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa your_file_read_1.fastq.gz your_file_read_2.fastq.gz  | samtools view -b -o output_bwamem2.bam
+```
+## Generating the BAI index file:
+Refer to the available code at: [sorted_bai_bam_files.sh](sorted_bai_bam_files.sh)
+
+## Generating quality metrics for BAM files:
+Refer to the available code at: [generate_bam_metrics.sh](generate_bam_metrics.sh)
+
+## Building a table of key metrics:
+Refer to the available code at: [table_bam_metrics.sh](table_bam_metrics.sh)
+
+## Visualizing the computational time required by each alignment tool:
+**Note:** This code requires you to extract the execution time generated in the command line output and insert it into the script.
+Refer to the available code at: [spider-plot.R](spider-plot.R)
+Two similar graphs to these ones will be generated. 
+
+<div align="center">
+<img src="grafico1_medias.png" width="300px" />
+</div> 
+
+<div align="center">
+<img src="grafico2_tempo_real.png" width="300px" />
+</div> 
+
+## Post-alignment processing: Sorting and indexing BAM files using samtools:
+```
+samtools sort your_file.bam -o output_sorted.bam
+
+samtools index output_sorted.bam
+```
+**Note:** For complete implementation details, refer to the alignment pipeline script: [from_downloading_the_reference_genome_to_bam_sorted.sh](from_downloading_the_reference_genome_to_bam_sorted.sh)
+
+## Variant Calling Workflow
+**Here**, you can choose which variant calling tools you prefer. Tip: Read the article that generated this pipeline to make a better choice.
+**Pay attention:** Remember to change the name and the way of your file.
+
+### For variant call processing with **GATK** :
+Refer to the available code at: [call_variant_gatk.sh](call_variant_gatk.sh)
+### For variant call  processing with **bcftools**:
+Refer to the available code at: [script_call_variant_bcftools_freebayes.sh](script_call_variant_bcftools_freebayes.sh)
+### For variant call processing with **Freebayes**:
+Refer to the available code at: [script_call_variant_bcftools_freebayes.sh](script_call_variant_bcftools_freebayes.sh)
+### For variant call processing with **DeepVariant**:
+Refer to the available code at: [call_variant_deepvariant.sh](call_variant_deepvariant.sh)
+
+## Visualizing the computational time required by each variant calling tool:
+**Note:** This code requires you to extract the execution time generated in the command line output and insert it into the script.
+Refer to the available code at: [runingtime.R](runingtime.R)
+A similar graph to this one will be generated. 
+<div align="center">
+<img src="runtime_comparison.png" width="300px" />
+</div> 
+
+## To merge multiple sample-specific VCF files, use bcftools with the following command:
+
+Before merging, it's necessary to perform the indexing:
+```
+for file in *.vcf.gz; do
+    bcftools index "$file"
+done
+```
+
+For VCF files generated by FreeBayes or DeepVariant:
+```
+bcftools merge --force-samples -o output_name.vcf.gz -O z file1.vcf.gz file2.vcf.gz file3.vcf.gz
+```
+For VCF files generated by GATK or bcftools:
+```
+bcftools merge -o output_name.vcf.gz -O z file1.vcf.gz file2.vcf.gz file3.vcf.gz
+```
+
+## Extracting variants from VCF files:
+Refer to the available code at: [extract_var.sh](extract_var.sh)
+
+## Upset plot to compare variant counts across different callers:
+Refer to the available code at: [upset-plot-script.R](upset-plot-script.R)
+Remember to replace filenames and paths in the command. This will generate a plot similar to:
+<div align="center">
+<img src="https://github.com/user-attachments/assets/ea691bd5-51c9-4d25-9cc2-cada2e9b0fe3" width="300px" />
+</div> 
+
+## Inter-caller concordance was additionally assessed using **Venn diagrams** 
+See implementation at: [venn-diagram-script.R](venn-diagram-script.R)
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/a5411cd4-0652-4cd2-8e07-66cca43a32b1" width="300px" />
+</div> 
+
+### Code to filter variants with quality equal or above 30:
+```
+bcftools view -i 'QUAL>=30' var_deepvariants.vcf.gz | bcftools query -f '%CHROM:%POS:%REF>%ALT\n' > var_deepvariants_PASS30.txt
+bcftools view -i 'QUAL>=30' var_gatk.vcf.gz | bcftools query -f '%CHROM:%POS:%REF>%ALT\n' > var_gatk_PASS30.txt
+bcftools view -i 'QUAL>=30' var_freebayes.vcf.gz | bcftools query -f '%CHROM:%POS:%REF>%ALT\n' > var_freebayes_PASS30.txt
+bcftools view -i 'QUAL>=30' var_bcftools.vcf.gz | bcftools query -f '%CHROM:%POS:%REF>%ALT\n' > var_bcftools_PASS30.txt
+```
+## After the Q30 quality filter, here is the upsetplot and Venn diagram of the quality variants identified by the four different software programs:
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/d74d37f1-5b27-4897-90c1-8a99ba429183" width="300px" />
+</div> 
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/c297b94a-5db7-4a16-a054-c588b31c21c3" width="300px" />
+</div> 
+
+### **Conclusion:** GATK identifies 7.9% more variants with quality Q30 or higher than Freebayes and Freebayes is approximately 48.07% faster than GATK
+
+
+
+## **Additional option:** Optimized pipeline for cluster environments that processes downloaded SRA files into VCFs using BWA-MEM2 and FreeBayes as core tools:
+Refer to the available code at: [pipeline_hyperopt_otimizado.sh](pipeline_hyperopt_otimizado.sh)
+```
+qsub -v CLEANUP=1 pipeline_otimizado.sh 
+```
+
+## GWAS
+First of all, in order to process GWAS, you must have a vcf file containing the phenotype samples of interest and the control samples and .txt file with the names of the samples positioned in two equal columns, with the number '2' in front of the phenotype sample and the number '1' in front of the control sample. See the example .txt files:
+
+* [dia_pheno_example.txt](dia_pheno_example.txt)
+* [ad_pheno_example.txt](ad_pheno_example.txt)
+
+### Filter out variants with a minor allele frequency (MAF) below 5%, which have little statistical power at this sample size:
+```
+bcftools view -S samples.txt -i 'MAF[0] > 0.05' -Oz -o output_file.vcf.gz your_input_file.vcf.gz
+```
+### Convert to PLINK format and additional filters:
+```
+plink --vcf your_input_file.vcf.gz --make-bed --maf 0.05 --geno 0.05 --hwe 1e-6 --allow-extra-chr --out your_file_clean
+```
+### Execute the GWAS analysis:
+```
+plink --bfile your_file_clean --pheno file_phenotype.txt --assoc --allow-no-sex --out gwas_results
+```
+
+> **Note:** `plink --assoc` runs a basic allelic association test without covariates. It is suitable for exploring the pipeline, but final analyses should adjust for population structure, for example with `plink2 --glm` using principal components, age and sex as covariates.
+
+### Checking the results:
+```
+# Checking results:
+#1. Check first lines of the file:
+head -n 5 gwas_results.assoc
+#2. Verify column names:
+awk 'NR==1 {print; exit}' gwas_results.assoc
+#3. Count total SNPs:
+wc -l gwas_results.assoc  # Total lines
+awk 'NR>1' gwas_results.assoc | wc -l  # SNPs only (excluding header)
+#4. Check p-value distribution:
+# For non-missing p-values:
+awk '$9 != "NA" && NR>1 {print $9}' gwas_results.assoc | sort -g | uniq -c | head
+# Check problematic values
+# Non-numeric values in P column (usually column 9):
+awk 'NR>1 && $9 !~ /^[0-9.eE-]+$/ {print $9}' gwas_results.assoc | sort | uniq -c
+```
+
+### Generating individual Manhattan and QQ plots using R:
+```
+#!/usr/bin/env Rscript
+
+# Install package if needed
+if (!require("qqman")) {
+    install.packages("qqman", repos="https://cloud.r-project.org")
+    library(qqman)
+}
+
+# Read data
+gwas_data <- read.table("gwas_results.assoc", header=TRUE)
+
+# Create unique SNP IDs (since SNP column contains ".")
+gwas_data$SNP_ID <- paste0("chr", gwas_data$CHR, ":", gwas_data$BP)
+
+# Check and clean p-values
+gwas_data$P <- as.numeric(gwas_data$P)
+valid_data <- gwas_data[!is.na(gwas_data$P) & is.finite(gwas_data$P), ]
+
+# 1. Manhattan Plot
+png("manhattan_final.png", width=1200, height=600)
+manhattan(valid_data,
+          chr = "CHR",
+          bp = "BP",
+          p = "P",
+          snp = "SNP_ID",  # Use created IDs
+          main = "Manhattan Plot - GWAS Results",
+          suggestiveline = -log10(1e-5),
+          genomewideline = -log10(5e-8))
+dev.off()
+
+# 2. QQ Plot
+png("qq_final.png", width=600, height=600)
+qq(valid_data$P, main = "QQ Plot - GWAS Results")
+dev.off()
+
+print("Plots generated successfully! Check: manhattan_final.png and qq_final.png")
+```
+## Manhattan plot combine:
+Refer to the available code at: [Manhattan-plot-combine.R](Manhattan-plot-combine.R)
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/3ada9047-aa21-4018-b47a-213419be71e0" width="300px" />
+</div> 
+
+
+## Pleiotropy analysis:
+### Run the GWAS for the two target diseases and then conduct the analyses using the results obtained:
+```
+#!/bin/bash
+
+# For the first file (gwas_ad_results.assoc)
+awk 'NR>1 {
+    # Build the identifier in CHR:BP:A1:A2 format
+    id = $1 ":" $3 ":" $4 ":" $7
+    # Print the identifier and the P value
+    print id, $9
+}' gwas_ad_results.assoc > snps_ad_formatted.txt
+
+# For the second file (gwas_dia_results.assoc)
+awk 'NR>1 {
+    # Build the identifier in CHR:BP:A1:A2 format
+    id = $1 ":" $3 ":" $4 ":" $7
+    # Print the identifier and the P value
+    print id, $9
+}' gwas_dia_results.assoc > snps_dia_formatted.txt
+
+echo "Generated files:"
+echo "snps_ad_formatted.txt - First formatted file"
+echo "snps_dia_formatted.txt - Second formatted file"
+
+# Show first lines as an example
+echo -e "\nFirst lines of the first file:"
+head -n 5 snps_ad_formatted.txt
+
+echo -e "\nFirst lines of the second file:"
+head -n 5 snps_dia_formatted.txt
+
+```
+
+```
+#!/bin/bash
+
+# [Previous code that generates snps_ad_formatted.txt and snps_dia_formatted.txt]
+
+# Find overlapping variants with awk (no header in the temporary file)
+awk '
+NR==FNR && FNR>1 {
+    pvalues_ad[$1] = $2
+    next
+}
+FNR>1 {
+    if ($1 in pvalues_ad && $2 != "NA" && pvalues_ad[$1] != "NA") {
+        print $1, pvalues_ad[$1], $2
+    }
+}
+' snps_ad_formatted.txt snps_dia_formatted.txt > temp_overlapping.txt
+
+# Combined p-value with Fisher's method
+fisher_combined_test() {
+    local p1=$1
+    local p2=$2
+    
+    # Check that the values are valid numbers
+    if ! [[ "$p1" =~ ^[0-9eE\.+-]+$ ]] || ! [[ "$p2" =~ ^[0-9eE\.+-]+$ ]]; then
+        echo "NA"
+        return
+    fi
+    
+    # Convert scientific notation if needed
+    p1=$(echo "$p1" | sed 's/[eE]+*/*10^/g')
+    p2=$(echo "$p2" | sed 's/[eE]+*/*10^/g')
+    
+    # Use bc for precise arithmetic, avoiding p = 0 and invalid values
+    p1=$(echo "scale=20; if ($p1 <= 0) 0.0000000001 else if ($p1 > 1) 1 else $p1" | bc -l 2>/dev/null || echo "NA")
+    p2=$(echo "scale=20; if ($p2 <= 0) 0.0000000001 else if ($p2 > 1) 1 else $p2" | bc -l 2>/dev/null || echo "NA")
+    
+    if [[ "$p1" == "NA" ]] || [[ "$p2" == "NA" ]]; then
+        echo "NA"
+        return
+    fi
+    
+    # Test statistic: X² = -2 * Σ ln(p_i)
+    local chi_square=$(echo "-2 * (l($p1) + l($p2))" | bc -l 2>/dev/null || echo "NA")
+    
+    if [[ "$chi_square" == "NA" ]]; then
+        echo "NA"
+        return
+    fi
+    
+    # P-value for a chi-square with 4 degrees of freedom: exp(-X/2) * (1 + X/2)
+    local combined_p=$(echo "scale=20; e(-$chi_square/2) * (1 + $chi_square/2)" | bc -l 2>/dev/null || echo "NA")
+    
+    # Keep the p-value between 0 and 1
+    combined_p=$(echo "scale=20; if ($combined_p < 0) 0 else if ($combined_p > 1) 1 else $combined_p" | bc -l 2>/dev/null || echo "NA")
+    
+    echo "$combined_p"
+}
+
+# Process overlapping variants and compute Fisher's p-value
+echo "SNP P_disease_1 P_disease_2 Fisher_P" > snps_pleiotropic_final.txt
+
+while read -r snp p1 p2; do
+    # Combined p-value with Fisher's method
+    fisher_p=$(fisher_combined_test "$p1" "$p2")
+    
+    # Skip this line if the calculation failed
+    if [[ "$fisher_p" != "NA" ]]; then
+        echo "$snp $p1 $p2 $fisher_p" >> snps_pleiotropic_final.txt
+    else
+        echo "Warning: could not compute Fisher's p-value for $snp (P1=$p1, P2=$p2)" >&2
+    fi
+done < temp_overlapping.txt
+
+# Sort by significance (Fisher_P), smallest first
+head -n 1 snps_pleiotropic_final.txt > header.txt
+tail -n +2 snps_pleiotropic_final.txt | sort -k4,4g > sorted_snps.txt
+cat header.txt sorted_snps.txt > snps_pleiotropic_sorted.txt
+
+# Remove temporary files
+rm temp_overlapping.txt header.txt sorted_snps.txt
+
+echo -e "\nFinal file: snps_pleiotropic_sorted.txt"
+echo "Columns: SNP, P_disease_1, P_disease_2, Fisher_P"
+echo -e "\nTop 10 most significant variants:"
+head -n 11 snps_pleiotropic_sorted.txt | column -t
+
+echo -e "\nTotal number of overlapping variants: $(($(wc -l < snps_pleiotropic_sorted.txt) - 1))"
+
+```
+```
+# Scatter-plot-detalhado.R
+data <- read.table("snps_pleiotropic_sorted.txt", header=TRUE)
+png("pvalue_scatter.png", width=800, height=800, res=100)
+
+# Colour points by significance
+plot(-log10(data$P_disease_1), -log10(data$P_disease_2),
+     xlab="-log10(P-value, Alzheimer's disease)", 
+     ylab="-log10(P-value, type 2 diabetes)",
+     main="Significance comparison between phenotypes",
+     pch=19, 
+     col=ifelse(data$Fisher_P < 0.05, "blue", 
+               ifelse(data$P_disease_1 < 0.05 | data$P_disease_2 < 0.05, "red", "black")))
+
+abline(h=-log10(0.05), v=-log10(0.05), lty=2, col="gray")
+legend("topright", 
+       legend=c("Pleiotropic (Fisher p < 0.05)", 
+                "Significant in one disease (p < 0.05)", 
+                "Not significant"),
+       col=c("blue", "red", "black"), 
+       pch=19)
+
+dev.off()
+
+
+# Select significant pleiotropic variants
+pleiotropic <- data[data$Fisher_P < 0.05, ]
+
+cat("=============================================\n")
+cat("         PLEIOTROPY ANALYSIS\n")
+cat("=============================================\n\n")
+
+cat("Plot saved as: pvalue_scatter.png\n\n")
+
+cat("SUMMARY:\n")
+cat("• Total variants:", nrow(data), "\n")
+cat("• Pleiotropic variants (Fisher p < 0.05):", nrow(pleiotropic), "\n")
+cat("• Percentage pleiotropic:", round(nrow(pleiotropic)/nrow(data)*100, 1), "%\n\n")
+
+if (nrow(pleiotropic) > 0) {
+  cat("SIGNIFICANT PLEIOTROPIC VARIANTS:\n")
+  cat("=============================================\n")
+  
+  # Format the output for readability
+  for(i in 1:nrow(pleiotropic)) {
+    var <- pleiotropic[i, ]
+    cat(i, "-", var$SNP, "\n")
+    cat("   P_Alzheimer:", sprintf("%.3e", var$P_disease_1), 
+        "| P_Diabetes:", sprintf("%.3e", var$P_disease_2),
+        "| Fisher_P:", sprintf("%.3e", var$Fisher_P), "\n\n")
+  }
+  
+  # Save to file
+  write.table(pleiotropic, "significant_pleiotropic_variants.txt", 
+              row.names=FALSE, quote=FALSE, sep="\t")
+  cat("Full list saved to: significant_pleiotropic_variants.txt\n\n")
+  
+} else {
+  cat("No significant pleiotropic variants found.\n\n")
+}
+
+cat("TOP 5 MOST SIGNIFICANT VARIANTS:\n")
+cat("=============================================\n")
+top5 <- head(data[order(data$Fisher_P), ], 5)
+for(i in 1:nrow(top5)) {
+  var <- top5[i, ]
+  cat(i, "-", var$SNP, 
+      "(Fisher_P =", sprintf("%.3e", var$Fisher_P), ")\n")
+}
+
+cat("\nCORRELATION BETWEEN PHENOTYPES:\n")
+cat("• r =", round(cor(-log10(data$P_disease_1), -log10(data$P_disease_2)), 3), "\n")
+
+```
+
+## Scatter plot of p-values:
+Refer to the available code at: [Scatter-plot.R](Scatter-plot.R)
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/4df52e66-2056-4e96-a09b-9675e330ef03" width="300px" />
+</div> 
+
+## The variants were annotated in the VEP via a graphical interface on the website: 
+https://www.ensembl.org/Tools/VEP
+
+### the variants were filtered using the Python script available at: 
+[find_biomarkers.ipynb](find_biomarkers.ipynb)
+
+## Enrichment analysis:
+The enrichment analysis was done through the Python script: [complete_enrich.py](complete_enrich.py)
+<div align="center">
+<img src="https://github.com/user-attachments/assets/fa6871a4-e47c-45f0-ae51-3f70874098cf" width="300px" />
+</div> 
+
+## REVIGO analysis:
+The information about the ontology genetics of 3 variants that show 'HIGH' in the 'IMPACT' column was collected from the 'GO' column in the previous script, and the analysis was done with the REVIGO code to generate a Biological Process graphical interface. 
+Please review the available code at: [scriptREVIGO_treemapBP.R](scriptREVIGO_treemapBP.R)
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/e6cbdc36-ddf1-4876-8585-5cd5812454b5" width="300px" />
+</div> 
+
+
+# References
+
+* SRA Toolkit: https://github.com/ncbi/sra-tools
+* FastQC: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/
+* MultiQC: Ewels P et al. *Bioinformatics* 2016;32:3047–3048.
+* Trimmomatic: Bolger AM et al. *Bioinformatics* 2014;30:2114–2120.
+* fastp: Chen S et al. *Bioinformatics* 2018;34:i884–i890.
+* Bowtie2: Langmead B, Salzberg SL. *Nature Methods* 2012;9:357–359.
+* BWA: Li H, Durbin R. *Bioinformatics* 2009;25:1754–1760.
+* BWA-MEM2: Vasimuddin M et al. *IEEE IPDPS* 2019:314–324. doi:10.1109/IPDPS.2019.00041
+* SAMtools and BCFtools: Danecek P et al. *GigaScience* 2021;10:giab008.
+* GATK: McKenna A et al. *Genome Research* 2010;20:1297–1303.
+* FreeBayes: Garrison E, Marth G. *arXiv* 2012;1207.3907.
+* DeepVariant: Poplin R et al. *Nature Biotechnology* 2018;36:983–987.
+* PLINK: Purcell S et al. *American Journal of Human Genetics* 2007;81:559–575.
+* qqman: Turner SD. *Journal of Open Source Software* 2018;3:731.
+* Fisher's method: Fisher RA. *Statistical Methods for Research Workers*. Oliver and Boyd; 1925.
+* VEP: McLaren W et al. *Genome Biology* 2016;17:122. https://www.ensembl.org/Tools/VEP
+* REVIGO: Supek F et al. *PLoS ONE* 2011;6:e21800. http://revigo.irb.hr/
+
+## Acknowledgements
+
+Parts of the code were drafted with the help of AI assistants (ChatGPT, DeepSeek and Claude) and were reviewed and tested by the authors.
