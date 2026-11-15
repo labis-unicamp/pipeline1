@@ -37,7 +37,7 @@ ngc_file="/the_directory_path_where_your_access_key_is_stored_and_the_filename_o
 while read sra_id; do
     echo "Processing SRA ID: $sra_id"
 
-    # Download the SRA file (aumentando o limite de tamanho para 100GB)
+    # Download the SRA file (raising the size limit to 100 GB)
     prefetch --ngc "$ngc_file" --max-size 100G "$sra_id"
 
     # Convert the SRA file to FASTQ
@@ -348,17 +348,17 @@ Refer to the available code at: [Manhattan-plot-combine.R](Manhattan-plot-combin
 
 # For the first file (gwas_ad_results.assoc)
 awk 'NR>1 {
-    # Criar o identificador no formato CHR:BP:A1:A2
+    # Build the identifier in CHR:BP:A1:A2 format
     id = $1 ":" $3 ":" $4 ":" $7
-    # Imprimir identificador e valor P
+    # Print the identifier and the P value
     print id, $9
 }' gwas_ad_results.assoc > snps_ad_formatted.txt
 
 # For the second file (gwas_dia_results.assoc)
 awk 'NR>1 {
-    # Criar o identificador no formato CHR:BP:A1:A2
+    # Build the identifier in CHR:BP:A1:A2 format
     id = $1 ":" $3 ":" $4 ":" $7
-    # Imprimir identificador e valor P
+    # Print the identifier and the P value
     print id, $9
 }' gwas_dia_results.assoc > snps_dia_formatted.txt
 
@@ -378,9 +378,9 @@ head -n 5 snps_dia_formatted.txt
 ```
 #!/bin/bash
 
-# [Código anterior para gerar snps_ad_formatted.txt e snps_dia_formatted.txt]
+# [Previous code that generates snps_ad_formatted.txt and snps_dia_formatted.txt]
 
-# Encontrar variantes sobrepostas usando awk - SEM cabeçalho no arquivo temporário
+# Find overlapping variants with awk (no header in the temporary file)
 awk '
 NR==FNR && FNR>1 {
     pvalues_ad[$1] = $2
@@ -391,24 +391,24 @@ FNR>1 {
         print $1, pvalues_ad[$1], $2
     }
 }
-' snps_ad_formatted.txt snps_dia_formatted.txt > temp_sobrepostos.txt
+' snps_ad_formatted.txt snps_dia_formatted.txt > temp_overlapping.txt
 
-# Função melhorada para calcular p-value combinado pelo método de Fisher
+# Combined p-value with Fisher's method
 fisher_combined_test() {
     local p1=$1
     local p2=$2
     
-    # Verificar se os valores são numéricos e válidos
+    # Check that the values are valid numbers
     if ! [[ "$p1" =~ ^[0-9eE\.+-]+$ ]] || ! [[ "$p2" =~ ^[0-9eE\.+-]+$ ]]; then
         echo "NA"
         return
     fi
     
-    # Converter notação científica se necessário
+    # Convert scientific notation if needed
     p1=$(echo "$p1" | sed 's/[eE]+*/*10^/g')
     p2=$(echo "$p2" | sed 's/[eE]+*/*10^/g')
     
-    # Usar bc para cálculo preciso, evitando p=0 e valores inválidos
+    # Use bc for precise arithmetic, avoiding p = 0 and invalid values
     p1=$(echo "scale=20; if ($p1 <= 0) 0.0000000001 else if ($p1 > 1) 1 else $p1" | bc -l 2>/dev/null || echo "NA")
     p2=$(echo "scale=20; if ($p2 <= 0) 0.0000000001 else if ($p2 > 1) 1 else $p2" | bc -l 2>/dev/null || echo "NA")
     
@@ -417,7 +417,7 @@ fisher_combined_test() {
         return
     fi
     
-    # Calcular estatística de teste: X² = -2 * Σ ln(p_i)
+    # Test statistic: X² = -2 * Σ ln(p_i)
     local chi_square=$(echo "-2 * (l($p1) + l($p2))" | bc -l 2>/dev/null || echo "NA")
     
     if [[ "$chi_square" == "NA" ]]; then
@@ -425,108 +425,108 @@ fisher_combined_test() {
         return
     fi
     
-    # Calcular p-value usando aproximação mais precisa
+    # P-value for a chi-square with 4 degrees of freedom: exp(-X/2) * (1 + X/2)
     local combined_p=$(echo "scale=20; e(-$chi_square/2) * (1 + $chi_square/2)" | bc -l 2>/dev/null || echo "NA")
     
-    # Garantir que o p-value esteja entre 0 e 1
+    # Keep the p-value between 0 and 1
     combined_p=$(echo "scale=20; if ($combined_p < 0) 0 else if ($combined_p > 1) 1 else $combined_p" | bc -l 2>/dev/null || echo "NA")
     
     echo "$combined_p"
 }
 
-# Processar variantes sobrepostas e calcular Fisher
-echo "SNP P_disease_1 P_disease_2 Fisher_P" > snps_pleiotropicos_final.txt
+# Process overlapping variants and compute Fisher's p-value
+echo "SNP P_disease_1 P_disease_2 Fisher_P" > snps_pleiotropic_final.txt
 
 while read -r snp p1 p2; do
-    # Calcular p-value combinado pelo método de Fisher
+    # Combined p-value with Fisher's method
     fisher_p=$(fisher_combined_test "$p1" "$p2")
     
-    # Se o cálculo falhou, pular esta linha
+    # Skip this line if the calculation failed
     if [[ "$fisher_p" != "NA" ]]; then
-        echo "$snp $p1 $p2 $fisher_p" >> snps_pleiotropicos_final.txt
+        echo "$snp $p1 $p2 $fisher_p" >> snps_pleiotropic_final.txt
     else
-        echo "Aviso: Não foi possível calcular Fisher para $snp (P1=$p1, P2=$p2)" >&2
+        echo "Warning: could not compute Fisher's p-value for $snp (P1=$p1, P2=$p2)" >&2
     fi
-done < temp_sobrepostos.txt
+done < temp_overlapping.txt
 
-# Ordenar por significância (Fisher_P) do menor para o maior
-head -n 1 snps_pleiotropicos_final.txt > header.txt
-tail -n +2 snps_pleiotropicos_final.txt | sort -k4,4g > sorted_snps.txt
-cat header.txt sorted_snps.txt > snps_pleiotropicos_ordenados.txt
+# Sort by significance (Fisher_P), smallest first
+head -n 1 snps_pleiotropic_final.txt > header.txt
+tail -n +2 snps_pleiotropic_final.txt | sort -k4,4g > sorted_snps.txt
+cat header.txt sorted_snps.txt > snps_pleiotropic_sorted.txt
 
-# Limpar arquivos temporários
-rm temp_sobrepostos.txt header.txt sorted_snps.txt
+# Remove temporary files
+rm temp_overlapping.txt header.txt sorted_snps.txt
 
-echo -e "\nArquivo final gerado: snps_pleiotropicos_ordenados.txt"
-echo "Colunas: SNP, P_disease_1, P_disease_2, Fisher_P"
-echo -e "\nTop 10 variantes mais significativas:"
-head -n 11 snps_pleiotropicos_ordenados.txt | column -t
+echo -e "\nFinal file: snps_pleiotropic_sorted.txt"
+echo "Columns: SNP, P_disease_1, P_disease_2, Fisher_P"
+echo -e "\nTop 10 most significant variants:"
+head -n 11 snps_pleiotropic_sorted.txt | column -t
 
-echo -e "\nNúmero total de variantes sobrepostas: $(($(wc -l < snps_pleiotropicos_ordenados.txt) - 1))"
+echo -e "\nTotal number of overlapping variants: $(($(wc -l < snps_pleiotropic_sorted.txt) - 1))"
 
 ```
 ```
 # Scatter-plot-detalhado.R
-data <- read.table("snps_pleiotropicos_ordenados.txt", header=TRUE)
+data <- read.table("snps_pleiotropic_sorted.txt", header=TRUE)
 png("pvalue_scatter.png", width=800, height=800, res=100)
 
-# Código CORRIGIDO com cores mais informativas
+# Colour points by significance
 plot(-log10(data$P_disease_1), -log10(data$P_disease_2),
-     xlab="-log10(P-valor Alzheimer)", 
-     ylab="-log10(P-valor Diabetes)",
-     main="Comparação de Significância entre Fenótipos",
+     xlab="-log10(P-value, Alzheimer's disease)", 
+     ylab="-log10(P-value, type 2 diabetes)",
+     main="Significance comparison between phenotypes",
      pch=19, 
      col=ifelse(data$Fisher_P < 0.05, "blue", 
                ifelse(data$P_disease_1 < 0.05 | data$P_disease_2 < 0.05, "red", "black")))
 
 abline(h=-log10(0.05), v=-log10(0.05), lty=2, col="gray")
 legend("topright", 
-       legend=c("Pleiotrópica (Fisher p<0.05)", 
-                "Significativa em uma doença (p<0.05)", 
-                "Não significativa"),
+       legend=c("Pleiotropic (Fisher p < 0.05)", 
+                "Significant in one disease (p < 0.05)", 
+                "Not significant"),
        col=c("blue", "red", "black"), 
        pch=19)
 
 dev.off()
 
 
-# Identificar variantes pleiotrópicas significativas
-pleiotropicas <- data[data$Fisher_P < 0.05, ]
+# Select significant pleiotropic variants
+pleiotropic <- data[data$Fisher_P < 0.05, ]
 
 cat("=============================================\n")
-cat("         ANÁLISE DE PLEIOTROPIA\n")
+cat("         PLEIOTROPY ANALYSIS\n")
 cat("=============================================\n\n")
 
-cat("Gráfico salvo como: pvalue_scatter.png\n\n")
+cat("Plot saved as: pvalue_scatter.png\n\n")
 
-cat("ESTATÍSTICAS GERAIS:\n")
-cat("• Variantes totais:", nrow(data), "\n")
-cat("• Variantes pleiotrópicas (Fisher p < 0.05):", nrow(pleiotropicas), "\n")
-cat("• Percentual pleiotrópico:", round(nrow(pleiotropicas)/nrow(data)*100, 1), "%\n\n")
+cat("SUMMARY:\n")
+cat("• Total variants:", nrow(data), "\n")
+cat("• Pleiotropic variants (Fisher p < 0.05):", nrow(pleiotropic), "\n")
+cat("• Percentage pleiotropic:", round(nrow(pleiotropic)/nrow(data)*100, 1), "%\n\n")
 
-if (nrow(pleiotropicas) > 0) {
-  cat("VARIANTES PLEIOTRÓPICAS SIGNIFICATIVAS:\n")
+if (nrow(pleiotropic) > 0) {
+  cat("SIGNIFICANT PLEIOTROPIC VARIANTS:\n")
   cat("=============================================\n")
   
-  # Formatar a saída para melhor legibilidade
-  for(i in 1:nrow(pleiotropicas)) {
-    var <- pleiotropicas[i, ]
+  # Format the output for readability
+  for(i in 1:nrow(pleiotropic)) {
+    var <- pleiotropic[i, ]
     cat(i, "-", var$SNP, "\n")
     cat("   P_Alzheimer:", sprintf("%.3e", var$P_disease_1), 
         "| P_Diabetes:", sprintf("%.3e", var$P_disease_2),
         "| Fisher_P:", sprintf("%.3e", var$Fisher_P), "\n\n")
   }
   
-  # Salvar em arquivo
-  write.table(pleiotropicas, "variantes_pleiotropicas_significativas.txt", 
+  # Save to file
+  write.table(pleiotropic, "significant_pleiotropic_variants.txt", 
               row.names=FALSE, quote=FALSE, sep="\t")
-  cat("Lista completa salva em: variantes_pleiotropicas_significativas.txt\n\n")
+  cat("Full list saved to: significant_pleiotropic_variants.txt\n\n")
   
 } else {
-  cat("Nenhuma variante pleiotrópica significativa encontrada.\n\n")
+  cat("No significant pleiotropic variants found.\n\n")
 }
 
-cat("TOP 5 VARIANTES MAIS SIGNIFICATIVAS:\n")
+cat("TOP 5 MOST SIGNIFICANT VARIANTS:\n")
 cat("=============================================\n")
 top5 <- head(data[order(data$Fisher_P), ], 5)
 for(i in 1:nrow(top5)) {
@@ -535,7 +535,7 @@ for(i in 1:nrow(top5)) {
       "(Fisher_P =", sprintf("%.3e", var$Fisher_P), ")\n")
 }
 
-cat("\nCORRELAÇÃO ENTRE FENÓTIPOS:\n")
+cat("\nCORRELATION BETWEEN PHENOTYPES:\n")
 cat("• r =", round(cor(-log10(data$P_disease_1), -log10(data$P_disease_2)), 3), "\n")
 
 ```
