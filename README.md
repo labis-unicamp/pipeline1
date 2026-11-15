@@ -118,7 +118,7 @@ tar -xf Homo_sapiens_UCSC_hg38.tar.gz
 
 ### Bowtie index
 ```
-bowtie2-build Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
+bowtie2-build Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa Homo_sapiens/UCSC/hg38/Sequence/Bowtie2Index/genome
 ```
 ### BWA-MEM index
 ```
@@ -130,11 +130,11 @@ bwa-mem2 index Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa
 ```
 
 ## Performing sequence alignment against the reference genome:
-**Note:** Theses codes automatically converts SAM files to compressed BAM format during alignment.
+**Note:** These commands automatically convert SAM files to compressed BAM format during alignment.
 
 ### Bowtie alignment
 ```
-bowtie2 -x /Homo_sapiens/UCSC/hg38/Sequence/Bowtie2Index/genome.fa -1 your_file_read_1.fastq.gz -2 your_file_read__2.fastq.gz | samtools view -b -o output_bowtie.bam
+bowtie2 -x Homo_sapiens/UCSC/hg38/Sequence/Bowtie2Index/genome -1 your_file_read_1.fastq.gz -2 your_file_read_2.fastq.gz | samtools view -b -o output_bowtie.bam
 ```
 ### BWA-MEM alignment
 ```
@@ -145,17 +145,17 @@ bwa mem /Homo_sapiens/UCSC/hg38/Sequence/BWAIndex/genome.fa your_file_read_1.fas
 bwa-mem2 mem /Homo_sapiens/UCSC/hg38/Sequence/WholeGenomeFasta/genome.fa your_file_read_1.fastq.gz your_file_read_2.fastq.gz  | samtools view -b -o output_bwamem2.bam
 ```
 ## Generating the BAI index file:
-Refer to the available code at: /github_pipeline1/pipeline1/sorted_bai_bam_files.sh
+Refer to the available code at: [sorted_bai_bam_files.sh](sorted_bai_bam_files.sh)
 
 ## Generating quality metrics for BAM files:
-Refer to the available code at: /github_pipeline1/pipeline1/genareted_bam_metrics.sh
+Refer to the available code at: [generate_bam_metrics.sh](generate_bam_metrics.sh)
 
 ## Building a table of key metrics:
-Refer to the available code at: /github_pipeline1/pipeline1/table_bam_metrics.sh
+Refer to the available code at: [table_bam_metrics.sh](table_bam_metrics.sh)
 
 ## Visualizing the computational time required by each alignment tool:
 **Note:** This code requires you to extract the execution time generated in the command line output and insert it into the script.
-Refer to the available code at: /github_pipeline1/pipeline1/spider-plot.R
+Refer to the available code at: [spider-plot.R](spider-plot.R)
 Two similar graphs to these ones will be generated. 
 
 <div align="center">
@@ -172,24 +172,24 @@ samtools sort your_file.bam -o output_sorted.bam
 
 samtools index output_sorted.bam
 ```
-**Note:** For complete implementation details, refer to the alignment pipeline script: /github_pipeline1/pipeline1/from_downloading_the_reference_genome_to_bam_sorted.sh
+**Note:** For complete implementation details, refer to the alignment pipeline script: [from_downloading_the_reference_genome_to_bam_sorted.sh](from_downloading_the_reference_genome_to_bam_sorted.sh)
 
 ## Variant Calling Workflow
 **Here**, you can choose which variant calling tools you prefer. Tip: Read the article that generated this pipeline to make a better choice.
 **Pay attention:** Remember to change the name and the way of your file.
 
 ### For variant call processing with **GATK** :
-Refer to the available code at: /github_pipeline1/pipeline1/call_variant_gatk.sh
+Refer to the available code at: [call_variant_gatk.sh](call_variant_gatk.sh)
 ### For variant call  processing with **bcftools**:
-Refer to the available code at: /github_pipeline1/pipeline1/script_call_variant_bcftools_freebayes.sh
+Refer to the available code at: [script_call_variant_bcftools_freebayes.sh](script_call_variant_bcftools_freebayes.sh)
 ### For variant call processing with **Freebayes**:
-Refer to the available code at: /github_pipeline1/pipeline1/script_call_variant_bcftools_freebayes.sh
+Refer to the available code at: [script_call_variant_bcftools_freebayes.sh](script_call_variant_bcftools_freebayes.sh)
 ### For variant call processing with **DeepVariant**:
-Refer to the available code at: /github_pipeline1/pipeline1/call_variant_deepvariant.sh
+Refer to the available code at: [call_variant_deepvariant.sh](call_variant_deepvariant.sh)
 
 ## Visualizing the computational time required by each variant calling tool:
 **Note:** This code requires you to extract the execution time generated in the command line output and insert it into the script.
-Refer to the available code at: /github_pipeline1/pipeline1/runingtime.R
+Refer to the available code at: [runingtime.R](runingtime.R)
 A similar graph to this one will be generated. 
 <div align="center">
 <img src="https://github.com/user-attachments/assets/cf57fd15-7525-47cc-a8fe-177408352f76" width="300px" />
@@ -214,17 +214,17 @@ bcftools merge -o output_name.vcf.gz -O z file1.vcf.gz file2.vcf.gz file3.vcf.gz
 ```
 
 ## Extracting variants from VCF files:
-Refer to the available code at: /github_pipeline1/pipeline1/extract_var.sh
+Refer to the available code at: [extract_var.sh](extract_var.sh)
 
 ## Upset plot to compare variant counts across different callers:
-Refer to the available code at: /github_pipeline1/pipeline1/upset-plot-script.R
+Refer to the available code at: [upset-plot-script.R](upset-plot-script.R)
 Remember to replace filenames and paths in the command. This will generate a plot similar to:
 <div align="center">
 <img src="https://github.com/user-attachments/assets/ea691bd5-51c9-4d25-9cc2-cada2e9b0fe3" width="300px" />
 </div> 
 
 ## Inter-caller concordance was additionally assessed using **Venn diagrams** 
-See implementation at: /github_pipeline1/pipeline1/venn-diagram-script.R
+See implementation at: [venn-diagram-script.R](venn-diagram-script.R)
 
 <div align="center">
 <img src="https://github.com/user-attachments/assets/a5411cd4-0652-4cd2-8e07-66cca43a32b1" width="300px" />
@@ -252,7 +252,7 @@ bcftools view -i 'QUAL>=30' var_bcftools.vcf.gz | bcftools query -f '%CHROM:%POS
 
 
 ## **Additional option:** Optimized pipeline for cluster environments that processes downloaded SRA files into VCFs using BWA-MEM2 and FreeBayes as core tools:
-Refer to the available code at: /github_pipeline1/pipeline1/pipeline_hyperopt_otimizado.sh
+Refer to the available code at: [pipeline_hyperopt_otimizado.sh](pipeline_hyperopt_otimizado.sh)
 ```
 qsub -v CLEANUP=1 pipeline_otimizado.sh 
 ```
@@ -260,12 +260,12 @@ qsub -v CLEANUP=1 pipeline_otimizado.sh
 ## GWAS
 First of all, in order to process GWAS, you must have a vcf file containing the phenotype samples of interest and the control samples and .txt file with the names of the samples positioned in two equal columns, with the number '2' in front of the phenotype sample and the number '1' in front of the control sample. See the example .txt files:
 
-* /github_pipeline1/pipeline1/dia_pheno_example.txt
-* /github_pipeline1/pipeline1/ad_pheno_example.txt
+* [dia_pheno_example.txt](dia_pheno_example.txt)
+* [ad_pheno_example.txt](ad_pheno_example.txt)
 
 ### After that, you should filter out the variants with statistical power equal to or greater than the 5% allelic frequency:
 ```
-bcftools view -S samples.txt -i 'MAF[0] > 0.0005' -Oz -o output_file.vcf.gz your_input_file.vcf.gz
+bcftools view -S samples.txt -i 'MAF[0] > 0.05' -Oz -o output_file.vcf.gz your_input_file.vcf.gz
 ```
 ### Convert to PLINK format and additional filters:
 ```
@@ -334,7 +334,7 @@ dev.off()
 print("Plots generated successfully! Check: manhattan_final.png and qq_final.png")
 ```
 ## Manhattan plot combine:
-Refer to the available code at: /github_pipeline1/pipeline1/Manhattan-plot-combine.R
+Refer to the available code at: [Manhattan-plot-combine.R](Manhattan-plot-combine.R)
 
 <div align="center">
 <img src="https://github.com/user-attachments/assets/3ada9047-aa21-4018-b47a-213419be71e0" width="300px" />
@@ -352,7 +352,7 @@ awk 'NR>1 {
     id = $1 ":" $3 ":" $4 ":" $7
     # Imprimir identificador e valor P
     print id, $9
-}' gwas_ad_results.assoc > snps_ad_formatados.txt
+}' gwas_ad_results.assoc > snps_ad_formatted.txt
 
 # For the second file (gwas_dia_results.assoc)
 awk 'NR>1 {
@@ -360,7 +360,7 @@ awk 'NR>1 {
     id = $1 ":" $3 ":" $4 ":" $7
     # Imprimir identificador e valor P
     print id, $9
-}' gwas_dia_results.assoc > snps_dia_formatados.txt
+}' gwas_dia_results.assoc > snps_dia_formatted.txt
 
 echo "Generated files:"
 echo "snps_ad_formatted.txt - First formatted file"
@@ -378,7 +378,7 @@ head -n 5 snps_dia_formatted.txt
 ```
 #!/bin/bash
 
-# [Código anterior para gerar snps_ad_formatados.txt e snps_dia_formatados.txt]
+# [Código anterior para gerar snps_ad_formatted.txt e snps_dia_formatted.txt]
 
 # Encontrar variantes sobrepostas usando awk - SEM cabeçalho no arquivo temporário
 awk '
@@ -391,7 +391,7 @@ FNR>1 {
         print $1, pvalues_ad[$1], $2
     }
 }
-' snps_ad_formatados.txt snps_dia_formatados.txt > temp_sobrepostos.txt
+' snps_ad_formatted.txt snps_dia_formatted.txt > temp_sobrepostos.txt
 
 # Função melhorada para calcular p-value combinado pelo método de Fisher
 fisher_combined_test() {
@@ -426,7 +426,7 @@ fisher_combined_test() {
     fi
     
     # Calcular p-value usando aproximação mais precisa
-    local combined_p=$(echo "scale=20; e(-$chi_square/2) * (1 + $chi_square/2 + $chi_square^2/8 + $chi_square^3/48)" | bc -l 2>/dev/null || echo "NA")
+    local combined_p=$(echo "scale=20; e(-$chi_square/2) * (1 + $chi_square/2)" | bc -l 2>/dev/null || echo "NA")
     
     # Garantir que o p-value esteja entre 0 e 1
     combined_p=$(echo "scale=20; if ($combined_p < 0) 0 else if ($combined_p > 1) 1 else $combined_p" | bc -l 2>/dev/null || echo "NA")
@@ -541,27 +541,27 @@ cat("• r =", round(cor(-log10(data$P_disease_1), -log10(data$P_disease_2)), 3)
 ```
 
 ## Scatter plot of p-values:
-Refer to the available code at: /github_pipeline1/pipeline1/Scatter-plot.R
+Refer to the available code at: [Scatter-plot.R](Scatter-plot.R)
 
 <div align="center">
 <img src="https://github.com/user-attachments/assets/4df52e66-2056-4e96-a09b-9675e330ef03" width="300px" />
 </div> 
 
 ## The variants were annotated in the VEP via a graphical interface on the website: 
-https://www.ensembl.org/Homo_sapiens/Tools/VEP?tl=k2dBMwVpFcRHNgnD-10806356
+https://www.ensembl.org/Tools/VEP
 
 ### the variants were filtered using the Python script available at: 
-github_pipeline1/pipeline1/find_biomarkers.ipynb
+[find_biomarkers.ipynb](find_biomarkers.ipynb)
 
 ## Enrichment analysis:
-The enrichment analysis was done through the Python script: /github_pipeline1/pipeline1/enriquecimento_completo.py
+The enrichment analysis was done through the Python script: [complete_enrich.py](complete_enrich.py)
 <div align="center">
 <img src="https://github.com/user-attachments/assets/fa6871a4-e47c-45f0-ae51-3f70874098cf" width="300px" />
 </div> 
 
 ## REVIGO analysis:
 The information about the ontology genetics of 3 variants that show 'HIGH' in the 'IMPACT' column was collected from the 'GO' column in the previous script, and the analysis was done with the REVIGO code to generate a Biological Process graphical interface. 
-Please review the available code at: /github_pipeline1/pipeline1/scriptREVIGO_treemapBP.R
+Please review the available code at: [scriptREVIGO_treemapBP.R](scriptREVIGO_treemapBP.R)
 
 <div align="center">
 <img src="https://github.com/user-attachments/assets/e6cbdc36-ddf1-4876-8585-5cd5812454b5" width="300px" />
@@ -573,6 +573,6 @@ Please review the available code at: /github_pipeline1/pipeline1/scriptREVIGO_tr
 * chatGPT: https://openai.com/
 * claude.ai : https://claude.ai/new
 * https://www.youtube.com/watch?v=oMFiGEZ6UlQ
-* VEP : https://www.ensembl.org/Homo_sapiens/Tools/VEP?tl=k2dBMwVpFcRHNgnD-10806356
+* VEP : https://www.ensembl.org/Tools/VEP
 * REVIGO : http://revigo.irb.hr/
 
