@@ -1,7 +1,7 @@
-# Unveiling Polygenic Pleiotropy with an Open-Source Genomics Pipeline: Decoding Shared Metabolic and Neurodegenerative Pathways in Alzheimer's Disease and Type 2 Diabetes through Open Science.
+# Benchmarking a FASTQ-to-GWAS Pipeline with Functional Pleiotropy: An Open-Source Workflow for Alzheimer's Disease and Type 2 Diabetes
 Open-source code for a bioinformatics pipeline analyzing genomic interactions between two polygenic diseases.
 
-This repository contains all the code required to process raw data (such as FASTQ files), align it to the human reference genome using three different aligners, and generate variant files using four distinct variant callers. The accompanying manuscript for this repository will be published in the Journal of the X-Meeting 2025 Congress, [https://labis.cbmeg.unicamp.br/labis/publicacoes/131-the-open-science-revolution-in-complex-disease-genetics-an-integrated-pipeline-from-fastq-to-gwas-and-functional-pleiotropy], critically analyzing each software’s performance and highlighting differences in their results. It also provides a step-by-step guide for conducting a GWAS (Genome-Wide Association Study) and a pleiotropy analysis, focusing on two diseases: Type 2 diabetes and Alzheimer’s disease.
+This repository contains all the code required to process raw data (such as FASTQ files), align it to the human reference genome using three different aligners, and generate variant files using four distinct variant callers. A description of this work is available on the [LABIS website](https://labis.cbmeg.unicamp.br/labis/publicacoes/131-the-open-science-revolution-in-complex-disease-genetics-an-integrated-pipeline-from-fastq-to-gwas-and-functional-pleiotropy), critically analyzing each software’s performance and highlighting differences in their results. It also provides a step-by-step guide for conducting a GWAS (Genome-Wide Association Study) and a pleiotropy analysis, focusing on two diseases: Type 2 diabetes and Alzheimer’s disease.
 
 The code snippets explicitly shown in this file are written in Bash. The remaining scripts are implemented in:
         
@@ -263,7 +263,7 @@ First of all, in order to process GWAS, you must have a vcf file containing the 
 * [dia_pheno_example.txt](dia_pheno_example.txt)
 * [ad_pheno_example.txt](ad_pheno_example.txt)
 
-### After that, you should filter out the variants with statistical power equal to or greater than the 5% allelic frequency:
+### Filter out variants with a minor allele frequency (MAF) below 5%, which have little statistical power at this sample size:
 ```
 bcftools view -S samples.txt -i 'MAF[0] > 0.05' -Oz -o output_file.vcf.gz your_input_file.vcf.gz
 ```
@@ -275,6 +275,8 @@ plink --vcf your_input_file.vcf.gz --make-bed --maf 0.05 --geno 0.05 --hwe 1e-6 
 ```
 plink --bfile your_file_clean --pheno file_phenotype.txt --assoc --allow-no-sex --out gwas_results
 ```
+
+> **Note:** `plink --assoc` runs a basic allelic association test without covariates. It is suitable for exploring the pipeline, but final analyses should adjust for population structure, for example with `plink2 --glm` using principal components, age and sex as covariates.
 
 ### Checking the results:
 ```
@@ -568,11 +570,26 @@ Please review the available code at: [scriptREVIGO_treemapBP.R](scriptREVIGO_tre
 </div> 
 
 
-# References:
-* deepseek : https://www.deepseek.com/
-* chatGPT: https://openai.com/
-* claude.ai : https://claude.ai/new
-* https://www.youtube.com/watch?v=oMFiGEZ6UlQ
-* VEP : https://www.ensembl.org/Tools/VEP
-* REVIGO : http://revigo.irb.hr/
+# References
 
+* SRA Toolkit: https://github.com/ncbi/sra-tools
+* FastQC: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/
+* MultiQC: Ewels P et al. *Bioinformatics* 2016;32:3047–3048.
+* Trimmomatic: Bolger AM et al. *Bioinformatics* 2014;30:2114–2120.
+* fastp: Chen S et al. *Bioinformatics* 2018;34:i884–i890.
+* Bowtie2: Langmead B, Salzberg SL. *Nature Methods* 2012;9:357–359.
+* BWA: Li H, Durbin R. *Bioinformatics* 2009;25:1754–1760.
+* BWA-MEM2: Vasimuddin M et al. *IEEE IPDPS* 2019:314–324. doi:10.1109/IPDPS.2019.00041
+* SAMtools and BCFtools: Danecek P et al. *GigaScience* 2021;10:giab008.
+* GATK: McKenna A et al. *Genome Research* 2010;20:1297–1303.
+* FreeBayes: Garrison E, Marth G. *arXiv* 2012;1207.3907.
+* DeepVariant: Poplin R et al. *Nature Biotechnology* 2018;36:983–987.
+* PLINK: Purcell S et al. *American Journal of Human Genetics* 2007;81:559–575.
+* qqman: Turner SD. *Journal of Open Source Software* 2018;3:731.
+* Fisher's method: Fisher RA. *Statistical Methods for Research Workers*. Oliver and Boyd; 1925.
+* VEP: McLaren W et al. *Genome Biology* 2016;17:122. https://www.ensembl.org/Tools/VEP
+* REVIGO: Supek F et al. *PLoS ONE* 2011;6:e21800. http://revigo.irb.hr/
+
+## Acknowledgements
+
+Parts of the code were drafted with the help of AI assistants (ChatGPT, DeepSeek and Claude) and were reviewed and tested by the authors.
